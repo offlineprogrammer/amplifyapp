@@ -17,6 +17,7 @@ import outputs from "../amplify_outputs.json";
 import { generateClient } from "aws-amplify/data";
 import { getUrl } from "aws-amplify/storage";
 import { uploadData } from "aws-amplify/storage";
+import { renderJsonPath } from "aws-cdk-lib/aws-stepfunctions";
 /**
  * @type {import('aws-amplify/data').Client<import('../amplify/data/resource').Schema>}
  */
@@ -133,9 +134,10 @@ export default function App() {
           <Heading level={2}>Current Notes</Heading>
           <Grid
             margin="3rem 0"
-            templateColumns="1fr 1fr"
+            autoFlow="column"
+            justifyContent="center"
             gap="2rem"
-            alignContent={"center"}
+            alignContent="center"
           >
             {notes.map((note) => (
               <Flex
@@ -147,15 +149,12 @@ export default function App() {
                 border="1px solid #ccc"
                 padding="2rem"
                 borderRadius="5%"
+                className="box"
               >
                 <View>
                   <Heading level="3">{note.name}</Heading>
-                  {/* <Text as="span" fontWeight={700}>
-                    {note.name}
-                  </Text> */}
                 </View>
                 <Text fontStyle="italic">{note.description}</Text>
-                {/* <Text as="span">{note.description}</Text> */}
                 {note.image && (
                   <Image
                     src={note.image}
