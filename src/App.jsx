@@ -8,6 +8,8 @@ import {
   Flex,
   View,
   Image,
+  Grid,
+  Divider,
 } from "@aws-amplify/ui-react";
 import { Amplify } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
@@ -15,6 +17,7 @@ import outputs from "../amplify_outputs.json";
 import { generateClient } from "aws-amplify/data";
 import { getUrl } from "aws-amplify/storage";
 import { uploadData } from "aws-amplify/storage";
+import { renderJsonPath } from "aws-cdk-lib/aws-stepfunctions";
 /**
  * @type {import('aws-amplify/data').Client<import('../amplify/data/resource').Schema>}
  */
@@ -88,10 +91,22 @@ export default function App() {
   return (
     <Authenticator>
       {({ signOut }) => (
-        <div className="App">
+        <Flex
+          className="App"
+          justifyContent="center"
+          alignItems="center"
+          direction="column"
+          width="70%"
+          margin="0 auto"
+        >
           <Heading level={1}>My Notes App</Heading>
           <View as="form" margin="3rem 0" onSubmit={createNote}>
-            <Flex direction="row" justifyContent="center">
+            <Flex
+              direction="column"
+              justifyContent="center"
+              gap="2rem"
+              padding="2rem"
+            >
               <TextField
                 name="name"
                 placeholder="Note Name"
@@ -108,31 +123,38 @@ export default function App() {
                 variation="quiet"
                 required
               />
-              <View
-                name="image"
-                as="input"
-                type="file"
-                style={{ alignSelf: "end" }}
-              />
+              <View name="image" as="input" type="file" alignSelf={"end"} />
 
               <Button type="submit" variation="primary">
                 Create Note
               </Button>
             </Flex>
           </View>
+          <Divider />
           <Heading level={2}>Current Notes</Heading>
-          <View margin="3rem 0">
+          <Grid
+            margin="3rem 0"
+            autoFlow="column"
+            justifyContent="center"
+            gap="2rem"
+            alignContent="center"
+          >
             {notes.map((note) => (
               <Flex
                 key={note.id || note.name}
-                direction="row"
+                direction="column"
                 justifyContent="center"
                 alignItems="center"
+                gap="2rem"
+                border="1px solid #ccc"
+                padding="2rem"
+                borderRadius="5%"
+                className="box"
               >
-                <Text as="strong" fontWeight={700}>
-                  {note.name}
-                </Text>
-                <Text as="span">{note.description}</Text>
+                <View>
+                  <Heading level="3">{note.name}</Heading>
+                </View>
+                <Text fontStyle="italic">{note.description}</Text>
                 {note.image && (
                   <Image
                     src={note.image}
@@ -140,14 +162,17 @@ export default function App() {
                     style={{ width: 400 }}
                   />
                 )}
-                <Button variation="link" onClick={() => deleteNote(note)}>
+                <Button
+                  variation="destructive"
+                  onClick={() => deleteNote(note)}
+                >
                   Delete note
                 </Button>
               </Flex>
             ))}
-          </View>
+          </Grid>
           <Button onClick={signOut}>Sign Out</Button>
-        </div>
+        </Flex>
       )}
     </Authenticator>
   );
