@@ -13,11 +13,10 @@ import {
 } from "@aws-amplify/ui-react";
 import { Amplify } from "aws-amplify";
 import "@aws-amplify/ui-react/styles.css";
-import outputs from "../amplify_outputs.json";
-import { generateClient } from "aws-amplify/data";
 import { getUrl } from "aws-amplify/storage";
 import { uploadData } from "aws-amplify/storage";
-import { renderJsonPath } from "aws-cdk-lib/aws-stepfunctions";
+import { generateClient } from "aws-amplify/data";
+import outputs from "../amplify_outputs.json";
 /**
  * @type {import('aws-amplify/data').Client<import('../amplify/data/resource').Schema>}
  */
@@ -35,14 +34,12 @@ export default function App() {
   }, []);
 
   async function fetchNotes() {
-    const apiData = await client.models.Note.list();
-    console.log(apiData);
     const { data: notes } = await client.models.Note.list();
     await Promise.all(
       notes.map(async (note) => {
         if (note.image) {
           const linkToStorageFile = await getUrl({
-            path: `media/${note.image}`,
+            path: ({ identityId }) => `media/${identityId}/${note.image}`,
           });
           console.log(linkToStorageFile.url);
           note.image = linkToStorageFile.url;
@@ -64,12 +61,15 @@ export default function App() {
       description: form.get("description"),
       image: form.get("image").name,
     });
+
     console.log(newNote);
     if (newNote.image)
-      await uploadData({
-        path: `media/${newNote.image}`,
-        data: form.get("image"),
-      });
+      if (newNote.image)
+        await uploadData({
+          path: ({ identityId }) => `media/${identityId}/${newNote.image}`,
+
+          data: form.get("image"),
+        }).result;
 
     fetchNotes();
     event.target.reset();
@@ -123,7 +123,13 @@ export default function App() {
                 variation="quiet"
                 required
               />
-              <View name="image" as="input" type="file" alignSelf={"end"} />
+              <View
+                name="image"
+                as="input"
+                type="file"
+                alignSelf={"end"}
+                accept="image/png, image/jpeg"
+              />
 
               <Button type="submit" variation="primary">
                 Create Note
